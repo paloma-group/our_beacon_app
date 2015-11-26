@@ -2,6 +2,11 @@ angular
   .module('starter.services', [])
   .factory('beacon', function($rootScope) {
 
+  var eventTypes = {
+    'CLRegionStateInside': 'Enter',
+    'CLRegionStateOutside': 'Exit'
+  };
+
   return {
 
     initialise: function() {
@@ -15,14 +20,13 @@ angular
       cordova.plugins.locationManager.setDelegate(delegate);
 
       initialiseBeaconRegions();
-
     }
   }
 
   /* PRIVATE METHODS */
 
   function onDidStartMonitoringForRegion(pluginResult) {
-    console.log("Mointoring for Region");
+    console.log("Monitoring for Region");
   };
 
   function onDidRangeBeaconsInRegion(pluginResult) {
@@ -33,23 +37,28 @@ angular
     var event = pluginResult;
     switch (pluginResult.state) {
       case "CLRegionStateInside":
-        processEntryEvent(event);
+        processEvent(event);
         break;
       case "CLRegionStateOutside":
+        processEvent(event);
         break;
     }
   };
 
-  function processEntryEvent(event) {
-    $rootScope.$broadcast("beaconEventRecieved", {event: event});
+  function processEvent(event) {
+    var beaconEvent = {
+      eventType:  eventTypes[event.state],
+      beaconName: event.region.identifier
+    }
+    $rootScope.$broadcast("beaconEventRecieved", {event: beaconEvent});
   }
 
   function initialiseBeaconRegions() {
     var beacons = [{
-        identifier: "BEACON3",
-        uuid: "61687109-905F-4436-91F8-E602F514C96D",
-        minor: "32025",
-         major: "3",
+        identifier: "your-beacon-identifier",
+        uuid:  "your-beacon-uuid",
+        minor: "your-beacon-minor",
+        major: "your-beacon-major",
      }];
     setupBeaconRegions(beacons);
   }
@@ -58,10 +67,10 @@ angular
     for (var i = 0; i < beaconRegions.length; i++) {
       var beacon = beaconRegions[i];
       var beaconRegion = new cordova.plugins.locationManager.BeaconRegion(
-        beacon['identifier'],
-        beacon['uuid'],
-        beacon['major'],
-        beacon['minor']);
+          beacon.identifier,
+          beacon.uuid,
+          beacon.major,
+          beacon.minor);
 
       startMonitoringBeaconRegion(beaconRegion);
     }

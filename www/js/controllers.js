@@ -6,10 +6,7 @@ function EventsController($scope, beacon) {
   $scope.events = [];
 
   $scope.$on('beaconEventRecieved', function(event, args) {
-    $scope.events.push({
-      name: args.event.region.identifier,
-      type: args.event.state
-    });
+    $scope.events.push(args.event);
     $scope.$apply();
   });
 
